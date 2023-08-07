@@ -36,7 +36,8 @@ model Arena {
   websiteUrl String?
   phoneNumber String?
 
-  practices Practice[] 
+  practices Practice[]
+  games Game[] 
   teamsPrefered Team[]
 }
 
@@ -54,6 +55,17 @@ model Association {
   websiteUrl String?
 }
 
+model Caliber {
+  id String @id @default(cuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  levels Level[]
+  associations Association[]
+  teams Team[]
+}
+
 model CoachProfile {
   id String @id @default(cuid())
 
@@ -69,6 +81,46 @@ model CoachProfile {
   supportedTeams Team[] @relation("supported")
 }
 
+model DepthChart {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teamId String 
+  position Position @relation(fields: [positionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  positionId String
+  player PlayerProfile @relation(fields: [playerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  playerId String 
+  depthLevel DepthLevel @relation(fields: [depthLevelId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  depthLevelId String 
+}
+
+model DepthLevel {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  depthCharts DepthChart[]
+}
+
+
+model FeedbackFrom {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  gameId String
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teamId String
+}
+
 model File {
   id   String @id @unique @default(cuid())
   blob Bytes
@@ -76,6 +128,25 @@ model File {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   image     Image?
+}
+
+model Game {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  startTime DateTime
+  endTime DateTime
+  location Arena @relation(fields: [locationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  locationId String
+  homeTeam Team @relation("homeTeam", fields: [homeTeamId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  homeTeamId String
+  awayTeam Team @relation("awayTeam", fields: [awayTeamId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  awayTeamId String
+
+  feedbackForms FeedbackFrom[]
+  outcome Outcome?
 }
 
 model Image {
@@ -91,6 +162,140 @@ model Image {
   user User?
 }
 
+
+model Level {
+  id   String @id @default(cuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teams       Team[]
+  associations Association[]
+  calibers Caliber[]
+}
+
+model Outcome {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  winningTeam Team? @relation("outcomeWin", fields: [winningTeamId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  winningTeamId String?
+  losingTeam Team? @relation("outcomeLoss", fields: [losingTeamId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  losingTeamId String?
+  outcomeType OutcomeType @relation(fields: [outcomeTypeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  outcomeTypeId String
+  winningScore Int
+  losingScore Int
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  gameId String @unique
+}
+
+model OutcomeType {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  outcomes Outcome[]
+}
+
+model Password {
+  hash String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
+}
+
+model Permission {
+  id   String @id @unique @default(cuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles Role[]
+}
+
+model Practice {
+  id   String @id @unique @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  start DateTime
+  end DateTime
+  duration Int
+
+  location Arena @relation(fields: [locationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  locationId String
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teamId String
+}
+
+model Position {
+  id       String  @id @unique @default(cuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  playerProfiles PlayerProfile[]
+  depthCharts DepthChart[]
+}
+
+
+
+model PlayerProfile {
+  id       String  @id @unique @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstName String
+  lastName String
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String? @unique
+  position Position? @relation(fields: [positionId], references: [id], onUpdate: Cascade)
+  positionId String?
+  shotSide ShotSide? @relation(fields: [shotSideId], references: [id], onUpdate: Cascade)
+  shotSideId String?
+  hometown String?
+  dob DateTime?
+  weight Float?
+  height Float?
+  activeTeam Team @relation(fields: [activeTeamId], references: [id], onUpdate: Cascade)
+  activeTeamId String
+  jerseyNumber Int?
+  status Status @relation(fields: [statusId], references: [id], onUpdate: Cascade)
+  statusId String
+  depthChart DepthChart[]
+}
+
+model Record {
+  id      String  @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wins Int @default(0)
+  losses Int @default(0)
+  ties Int @default(0)
+  played Int @default(0)
+  points Int @default(0)
+  francJeux Int? @default(0)
+  goalsFor Int @default(0)
+  goalsAgainst Int @default(0)
+  plusMinus Int @default(0)
+
+  owner Team @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId String @unique
+}
+
 model Role {
   id   String @id @unique @default(cuid())
   name String @unique
@@ -102,14 +307,59 @@ model Role {
   permissions Permission[]
 }
 
-model Permission {
-  id   String @id @unique @default(cuid())
+model Session {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  expirationDate DateTime
+}
+
+model ShotSide {
+  id       String  @id @unique @default(cuid())
   name String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  roles Role[]
+  playerProfiles PlayerProfile[]
+}
+
+model Status {
+  id       String  @id @default(cuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  playerProfiles PlayerProfile[]
+}
+
+model Team {
+  id        String   @id @unique @default(cuid())
+  name     String
+  association Association @relation(fields: [associationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  associationId String
+  level Level @relation(fields: [levelId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  levelId String
+  caliber Caliber @relation(fields: [caliberId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  caliberId String
+  createdAt DateTime @default(now())
+  feedbackForms FeedbackFrom[]
+  season   String
+  updatedAt DateTime @updatedAt
+  roster PlayerProfile[]
+  coach CoachProfile? @relation("coached", fields: [coachId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  coachId String? @unique
+  supportStaff CoachProfile[] @relation("supported")
+  preferedArenas Arena[]
+  record Record?
+  homeGames Game[] @relation("homeTeam")
+  awayGames Game[] @relation("awayTeam")
+  practices Practice[] 
+  wins Outcome[] @relation("outcomeWin")
+  losses Outcome[] @relation("outcomeLoss")
+  depthChart DepthChart[]
 }
 
 model User {
@@ -127,13 +377,6 @@ model User {
   playerProfile PlayerProfile?
   roles    Role[]
   session  Session[]
-}
-
-model Password {
-  hash String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
 }
 
 model Verification {
@@ -162,123 +405,4 @@ model Verification {
   expiresAt DateTime?
 
   @@unique([target, type])
-}
-
-model Session {
-  id             String   @id @default(cuid())
-  createdAt      DateTime @default(now())
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
-  expirationDate DateTime
-}
-
-model Team {
-  id        String   @id @unique @default(cuid())
-  name     String
-  association Association @relation(fields: [associationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  associationId String
-  level Level @relation(fields: [levelId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  levelId String
-  caliber Caliber @relation(fields: [caliberId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  caliberId String
-  season   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  roster PlayerProfile[]
-  coach CoachProfile? @relation("coached", fields: [coachId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  coachId String? @unique
-  supportStaff CoachProfile[] @relation("supported")
-  preferedArenas Arena[]
-}
-
-model Level {
-  id   String @id @default(cuid())
-  name String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  teams       Team[]
-  associations Association[]
-  calibers Caliber[]
-}
-
-model Caliber {
-  id String @id @default(cuid())
-  name String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  levels Level[]
-  associations Association[]
-  teams Team[]
-}
-
-model Practice {
-  id   String @id @unique @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  start DateTime
-  end DateTime
-  duration Int
-
-  location Arena @relation(fields: [locationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  locationId String
-}
-
-model Position {
-  id       String  @id @unique @default(cuid())
-  name String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  playerProfiles PlayerProfile[]
-}
-
-model ShotSide {
-  id       String  @id @unique @default(cuid())
-  name String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  playerProfiles PlayerProfile[]
-}
-
-model PlayerProfile {
-  id       String  @id @unique @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  firstName String
-  lastName String
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String? @unique
-  position Position? @relation(fields: [positionId], references: [id], onUpdate: Cascade)
-  positionId String?
-  shotSide ShotSide? @relation(fields: [shotSideId], references: [id], onUpdate: Cascade)
-  shotSideId String?
-  hometown String?
-  dob DateTime?
-  weight Float?
-  height Float?
-  activeTeam Team @relation(fields: [activeTeamId], references: [id], onUpdate: Cascade)
-  activeTeamId String
-  jerseyNumber Int?
-  status Status @relation(fields: [statusId], references: [id], onUpdate: Cascade)
-  statusId String
-}
-
-model Status {
-  id       String  @id @unique @default(cuid())
-  name String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  playerProfiles PlayerProfile[]
 }

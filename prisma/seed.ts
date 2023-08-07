@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { faker } from '@faker-js/faker'
-import { createPassword, createPlayer, createUser } from 'tests/db-utils.ts'
+import { createPlayer, createRecord } from 'tests/db-utils.ts'
 import { prisma } from '~/utils/db.server.ts'
 import { deleteAllData } from 'tests/setup/utils.ts'
 import { getPasswordHash } from '~/utils/auth.server.ts'
@@ -26,7 +26,7 @@ async function seed() {
 	})
 	console.timeEnd(`👑 Created admin role/permission...`)
 
-	const positions = ['LW', 'RW', 'C', 'LD', 'RD', 'G']
+	const positions = ['LW', 'RW', 'C', 'LD', 'RD', 'G', 'PK-1', 'PK-2']
 	console.time(`🥅 Created positions...`)
 	for (const position of positions) {
 		await prisma.position.create({
@@ -36,6 +36,30 @@ async function seed() {
 		})
 	}
 	console.timeEnd(`🥅 Created positions...`)
+
+	const depthLevels = [
+		'fm-1',
+		'fm-2',
+		'fm-3',
+		'fm-4',
+		'pk-1',
+		'pk-2',
+		'pk-3',
+		'pp-1',
+		'pp-2',
+		'pp-3',
+		'backup',
+		'starter',
+	]
+	console.time(`👽 Created positions...`)
+	for (const depthLevel of depthLevels) {
+		await prisma.depthLevel.create({
+			data: {
+				name: depthLevel,
+			},
+		})
+	}
+	console.timeEnd(`👽 Created positions...`)
 
 	const shotSides = ['Left', 'Right']
 	console.time(`🎯 Created shot sides...`)
@@ -57,6 +81,16 @@ async function seed() {
 		},
 	})
 	console.timeEnd(`⚕️ Created present status...`)
+
+	const statuses = ['Injured', 'Suspended', 'Sick', 'Other']
+	console.time(`⚕️ Created other statuses...`)
+	for (const status of statuses) {
+		await prisma.status.create({
+			select: { id: true },
+			data: { name: status },
+		})
+	}
+	console.timeEnd(`⚕️ Created other statuses...`)
 
 	console.time(`❄️ Created Pierrefonds arena...`)
 	const pfdsArena = await prisma.arena.create({
@@ -97,7 +131,7 @@ async function seed() {
 				'https://ville.ddo.qc.ca/en/play/sports-and-leisure/arenas-and-skating-rinks/',
 		},
 	})
-	console.timeEnd(`❄️ Created Pierrefonds arena...`)
+	console.timeEnd(`❄️ Created DDO arena...`)
 
 	console.time(`🅰️ Created caliber A...`)
 	const caliberA = await prisma.caliber.create({
@@ -143,6 +177,7 @@ async function seed() {
 	console.timeEnd(`🏒 Created Pierrefonds Hockey Association...`)
 
 	console.time(`🏰 Created Pierrefonds Royals hockey team...`)
+	const pfdsRecord = createRecord()
 	const royals = await prisma.team.create({
 		select: { id: true },
 		data: {
@@ -152,11 +187,15 @@ async function seed() {
 			caliber: { connect: { id: caliberA.id } },
 			level: { connect: { id: bantam.id } },
 			preferedArenas: { connect: { id: pfdsArena.id } },
+			record: {
+				create: { ...pfdsRecord },
+			},
 		},
 	})
 	console.timeEnd(`🏰 Created Pierrefonds Royals hockey team...`)
 
 	console.time(`🐍 Created Dollard Vipers hockey team...`)
+	const vipersRecord = createRecord()
 	const vipers = await prisma.team.create({
 		select: { id: true },
 		data: {
@@ -166,6 +205,11 @@ async function seed() {
 			caliber: { connect: { id: caliberA.id } },
 			level: { connect: { id: bantam.id } },
 			preferedArenas: { connect: { id: ddoArena.id } },
+			record: {
+				create: {
+					...vipersRecord,
+				},
+			},
 		},
 	})
 	console.timeEnd(`🐍 Created Dollard Vipers hockey team...`)

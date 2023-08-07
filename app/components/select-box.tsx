@@ -9,15 +9,22 @@ import {
 export interface SelectBoxProps {
 	placeholder?: string
 	items: { id: string; label: string }[]
+	onValueChange: (value: string) => void
+	defaultValue?: string
+	statusMarker?: React.ReactNode
 }
 
 export default function SelectBox({
 	placeholder = 'Select item...',
 	items,
+	onValueChange,
+	defaultValue,
+	statusMarker,
 }: SelectBoxProps) {
 	return (
-		<Select>
-			<SelectTrigger>
+		<Select onValueChange={onValueChange} defaultValue={defaultValue}>
+			<SelectTrigger className="h-full text-xs">
+				{statusMarker ? statusMarker : null}
 				<SelectValue placeholder={placeholder} />
 			</SelectTrigger>
 			<SelectContent>

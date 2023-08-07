@@ -86,6 +86,16 @@ export async function getUserId(request: Request) {
 	return session.userId
 }
 
+export async function getCoachProfileId(request: Request) {
+	const userId = await getUserId(request)
+	if (!userId) return null
+	const coachProfileId = await prisma.user.findUnique({
+		select: { coachProfile: { select: { id: true } } },
+		where: { id: userId },
+	})
+	return coachProfileId?.coachProfile?.id ?? null
+}
+
 export async function requireAnonymous(request: Request) {
 	await authenticator.isAuthenticated(request, {
 		successRedirect: '/',

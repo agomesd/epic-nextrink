@@ -16,6 +16,20 @@ export function createPlayer() {
 	}
 }
 
+export function createRecord() {
+	return {
+		francJeux: faker.number.int({ min: 0, max: 30 }),
+		goalsAgainst: faker.number.int({ min: 0, max: 70 }),
+		goalsFor: faker.number.int({ min: 0, max: 70 }),
+		losses: faker.number.int({ min: 0, max: 30 }),
+		wins: faker.number.int({ min: 0, max: 30 }),
+		ties: faker.number.int({ min: 0, max: 30 }),
+		played: faker.number.int({ min: 0, max: 60 }),
+		points: faker.number.int({ min: 0, max: 120 }),
+		plusMinus: faker.number.int({ min: -70, max: 70 }),
+	}
+}
+
 export function createUser() {
 	const firstName = faker.person.firstName()
 	const lastName = faker.person.lastName()

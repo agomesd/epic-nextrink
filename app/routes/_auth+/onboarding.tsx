@@ -94,7 +94,6 @@ export async function action({ request }: DataFunctionArgs) {
 		)
 	}
 	const {
-		fullName,
 		password,
 		// TODO: add user to mailing list if they agreed to it
 		// agreeToMailingList,
@@ -102,7 +101,7 @@ export async function action({ request }: DataFunctionArgs) {
 		redirectTo,
 	} = submission.value
 
-	const session = await signup({ email, fullName, password })
+	const session = await signup({ email, password })
 
 	cookieSession.set(authenticator.sessionKey, session.id)
 	cookieSession.unset(onboardingEmailSessionKey)

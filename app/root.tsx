@@ -14,7 +14,6 @@ import {
 	Scripts,
 	ScrollRestoration,
 	useLoaderData,
-	useMatches,
 	useParams,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
@@ -88,7 +87,11 @@ export async function loader({ request }: DataFunctionArgs) {
 				() =>
 					prisma.user.findUnique({
 						where: { id: userId },
-						select: { id: true, email: true, imageId: true },
+						select: {
+							id: true,
+							email: true,
+							imageId: true,
+						},
 					}),
 				{ timings, type: 'find user', desc: 'find user in root' },
 		  )
@@ -172,16 +175,18 @@ function App() {
 	const nonce = useNonce()
 	const user = useOptionalUser()
 	const theme = useTheme()
-	const matches = useMatches()
-	const isOnSearchPage = matches.find(m => m.id === 'routes/users+/index')
 	const { userId } = useParams()
 	useToast(data.flash?.toast)
 
-	console.log(isOnSearchPage)
-
 	return (
 		<Document nonce={nonce} theme={theme} env={data.ENV}>
-			{!userId ? <Header user={user} logoUrl={logoUrl} /> : null}
+			{!userId ? (
+				<Header
+					user={user}
+					logoUrl={logoUrl}
+					theme={data.requestInfo.userPrefs.theme}
+				/>
+			) : null}
 			<div className="h-screen w-full">
 				<Outlet />
 			</div>

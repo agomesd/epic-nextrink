@@ -75,25 +75,25 @@ export function ThemeSwitch({
 		mode === 'system' ? 'light' : mode === 'light' ? 'dark' : 'system'
 	const modeLabel = {
 		light: (
-			<Icon name="sun">
-				<span className="sr-only">Light</span>
+			<Icon name="sun" className="text-body-md">
+				<span>Light</span>
 			</Icon>
 		),
 		dark: (
-			<Icon name="moon">
-				<span className="sr-only">Dark</span>
+			<Icon name="moon" className="text-body-md">
+				<span>Dark</span>
 			</Icon>
 		),
 		system: (
-			<Icon name="laptop">
-				<span className="sr-only">System</span>
+			<Icon name="laptop" className="text-body-md">
+				<span>System</span>
 			</Icon>
 		),
 	}
 
 	return (
 		<fetcher.Form method="POST" action={ROUTE_PATH} {...form.props}>
-			<div className="flex gap-2">
+			<div className="p-2">
 				{/*
 					this is for progressive enhancement so we redirect them to the page
 					they are on if the JavaScript hasn't had a chance to hydrate yet.
@@ -102,7 +102,7 @@ export function ThemeSwitch({
 					<input type="hidden" name="redirectTo" value={requestInfo.path} />
 				)}
 				<input type="hidden" name="theme" value={nextMode} />
-				<button className="flex h-8 w-8 cursor-pointer items-center justify-center">
+				<button className="flex cursor-pointer items-center justify-center">
 					{modeLabel[mode]}
 				</button>
 			</div>

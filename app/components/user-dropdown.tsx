@@ -11,8 +11,14 @@ import { useSubmit, Link, Form } from '@remix-run/react'
 import { Button } from './ui/button.tsx'
 import { getUserImgSrc } from '~/utils/misc.ts'
 import { Icon } from './ui/icon.tsx'
+import { ThemeSwitch } from '~/routes/resources+/theme/index.tsx'
+import type { Theme } from '~/routes/resources+/theme/theme.server.ts'
 
-export function UserDropdown() {
+interface UserDropdownProps {
+	theme: Theme
+}
+
+export function UserDropdown({ theme }: UserDropdownProps) {
 	const user = useUser()
 	const submit = useSubmit()
 	const formRef = React.useRef<HTMLFormElement>(null)
@@ -45,11 +51,7 @@ export function UserDropdown() {
 						</Link>
 					</DropdownMenuItem>
 					<DropdownMenuItem asChild>
-						<Link prefetch="intent" to={`/user/${user.id}/notes`}>
-							<Icon className="text-body-md" name="pencil-2">
-								Notes
-							</Icon>
-						</Link>
+						<ThemeSwitch userPreference={theme} />
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						asChild
