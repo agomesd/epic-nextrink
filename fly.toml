@@ -13,7 +13,7 @@ source = "data"
 destination = "/data"
 
 [deploy]
-release_command = "node ./other/sentry-create-release"
+release_command = "node ./other/sentry-create-release && tsx ./prisma/seed.ts"
 
 [[services]]
 internal_port = 8080
