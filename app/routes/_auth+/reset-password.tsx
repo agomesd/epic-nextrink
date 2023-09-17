@@ -25,7 +25,7 @@ import {
 import { commitSession, getSession } from '~/utils/session.server.ts'
 import { passwordSchema } from '~/utils/user-validation.ts'
 
-export const resetPasswordUsernameSessionKey = 'resetPasswordUsername'
+export const resetPasswordEmailSessionKey = 'resetPasswordEmail'
 
 const resetPasswordSchema = z
 	.object({
@@ -41,14 +41,14 @@ export async function loader({ request }: DataFunctionArgs) {
 	await requireAnonymous(request)
 	const session = await getSession(request.headers.get('cookie'))
 	const error = session.get(authenticator.sessionErrorKey)
-	const resetPasswordUsername = session.get(resetPasswordUsernameSessionKey)
-	if (typeof resetPasswordUsername !== 'string' || !resetPasswordUsername) {
+	const resetPasswordEmail = session.get(resetPasswordEmailSessionKey)
+	if (typeof resetPasswordEmail !== 'string' || !resetPasswordEmail) {
 		return redirect('/login')
 	}
 	return json(
 		{
 			formError: error?.message,
-			resetPasswordUsername,
+			resetPasswordEmail,
 		},
 		{
 			headers: { 'Set-Cookie': await commitSession(session) },
@@ -77,12 +77,12 @@ export async function action({ request }: DataFunctionArgs) {
 	const { password } = submission.value
 
 	const session = await getSession(request.headers.get('cookie'))
-	const username = session.get(resetPasswordUsernameSessionKey)
-	if (typeof username !== 'string' || !username) {
+	const email = session.get(resetPasswordEmailSessionKey)
+	if (typeof email !== 'string' || !email) {
 		return redirect('/login')
 	}
-	await resetUserPassword({ username, password })
-	session.unset(resetPasswordUsernameSessionKey)
+	await resetUserPassword({ email, password })
+	session.unset(resetPasswordEmailSessionKey)
 	return redirect('/login', {
 		headers: { 'Set-Cookie': await commitSession(session) },
 	})
@@ -113,7 +113,7 @@ export default function ResetPasswordPage() {
 			<div className="text-center">
 				<h1 className="text-h1">Password Reset</h1>
 				<p className="mt-3 text-body-md text-muted-foreground">
-					Hi, {data.resetPasswordUsername}. No worries. It happens all the time.
+					Hi, {data.resetPasswordEmail}. No worries. It happens all the time.
 				</p>
 			</div>
 			<Form

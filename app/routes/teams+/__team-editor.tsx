@@ -9,12 +9,23 @@ import {
 import { Form, useFetcher } from '@remix-run/react'
 import { z } from 'zod'
 import { Field } from '~/components/forms.tsx'
-import { requireUserId } from '~/utils/auth.server.ts'
 import { prisma } from '~/utils/db.server.ts'
-import { useIsSubmitting } from '~/utils/misc.ts'
+
+const nameMinLength = 3
+const nameMaxLength = 20
+const cuidLength = 30
+
+const TeamEditorSchema = z.object({
+	id: z.string().optional(),
+	name: z.string().min(nameMinLength).max(nameMaxLength),
+	associationId: z.string().length(cuidLength),
+	levelId: z.string().length(cuidLength),
+	caliberId: z.string().length(cuidLength),
+	coachId: z.string().length(cuidLength),
+	seasonId: z.string().length(cuidLength),
+})
 
 export async function action({ request }: DataFunctionArgs) {
-	const userId = await requireUserId(request)
 	const formData = await request.formData()
 
 	const submission = await parse(formData, {
@@ -64,20 +75,6 @@ export async function action({ request }: DataFunctionArgs) {
 	return json({ updateTeam, submission } as const)
 }
 
-const nameMinLength = 3
-const nameMaxLength = 20
-const cuidLength = 30
-
-const TeamEditorSchema = z.object({
-	id: z.string().optional(),
-	name: z.string().min(nameMinLength).max(nameMaxLength),
-	associationId: z.string().length(cuidLength),
-	levelId: z.string().length(cuidLength),
-	caliberId: z.string().length(cuidLength),
-	coachId: z.string().length(cuidLength),
-	seasonId: z.string().length(cuidLength),
-})
-
 export function TeamEditor({
 	team,
 }: {
@@ -95,7 +92,6 @@ export function TeamEditor({
 	>
 }) {
 	const teamFetcher = useFetcher<typeof action>()
-	const isSubmitting = useIsSubmitting()
 
 	const [form, fields] = useForm({
 		id: 'team-editor',

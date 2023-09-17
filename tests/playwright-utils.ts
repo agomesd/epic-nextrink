@@ -9,26 +9,31 @@ export const dataCleanup = {
 	users: new Set<string>(),
 }
 
-export function deleteUserByUsername(username: string) {
-	return prisma.user.delete({ where: { username } })
+export function deleteUserByEmail(email: string) {
+	return prisma.user.delete({ where: { email } })
 }
 
 export async function insertNewUser({
-	username,
+	email,
 	password,
-}: { username?: string; password?: string } = {}) {
+	profileType = 'coach',
+}: {
+	email?: string
+	password?: string
+	profileType?: 'coach' | 'player' | 'admin'
+} = {}) {
 	const userData = createUser()
 	const user = await prisma.user.create({
 		data: {
 			...userData,
-			username: username ?? userData.username,
+			email: email ?? userData.email,
 			password: {
 				create: {
-					hash: await getPasswordHash(password || userData.username),
+					hash: await getPasswordHash(password || userData.email),
 				},
 			},
 		},
-		select: { id: true, name: true, username: true, email: true },
+		select: { id: true, email: true },
 	})
 	dataCleanup.users.add(user.id)
 	return user
@@ -62,8 +67,6 @@ export async function loginPage({
 				select: {
 					id: true,
 					email: true,
-					username: true,
-					name: true,
 				},
 		  })
 		: await insertNewUser()

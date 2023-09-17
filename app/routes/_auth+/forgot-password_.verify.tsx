@@ -21,7 +21,7 @@ import {
 	forgotPasswordTargetQueryParam,
 	verificationType,
 } from './forgot-password/index.tsx'
-import { resetPasswordUsernameSessionKey } from './reset-password.tsx'
+import { resetPasswordEmailSessionKey } from './reset-password.tsx'
 
 const verifySchema = z.object({
 	[forgotPasswordTargetQueryParam]: z.union([emailSchema, usernameSchema]),
@@ -113,14 +113,14 @@ async function validate(request: Request, body: FormData | URLSearchParams) {
 	})
 	const { usernameOrEmail } = submission.value
 	const user = await prisma.user.findFirst({
-		where: { OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }] },
-		select: { email: true, username: true },
+		where: { OR: [{ email: usernameOrEmail }] },
+		select: { email: true },
 	})
 	// this should not be possible...
 	invariantResponse(user, 'User not found')
 
 	const session = await getSession(request.headers.get('Cookie'))
-	session.set(resetPasswordUsernameSessionKey, user.username)
+	session.set(resetPasswordEmailSessionKey, user.email)
 	return redirect('/reset-password', {
 		headers: { 'Set-Cookie': await commitSession(session) },
 	})

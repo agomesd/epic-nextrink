@@ -49,8 +49,6 @@ export function createUser() {
 		.toLowerCase()
 		.replace(/[^a-z0-9_]/g, '_')
 	return {
-		username,
-		name: `${firstName} ${lastName}`,
 		email: `${username}@example.com`,
 	}
 }
