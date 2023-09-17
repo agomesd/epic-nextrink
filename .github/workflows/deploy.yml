@@ -161,7 +161,7 @@ jobs:
             'deploy --remote-only --build-arg COMMIT_SHA=${{ github.sha }} --app
             ${{ steps.app_name.outputs.value }}-staging'
         env:
-          NEXTRINK_DEPLOY_TOKEN: ${{ secrets.NEXTRINK_DEPLOY_TOKEN }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: 🚀 Deploy Production
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -169,4 +169,4 @@ jobs:
         with:
           args: 'deploy --remote-only --build-arg COMMIT_SHA=${{ github.sha }}'
         env:
-          NEXTRINK_DEPLOY_TOKEN: ${{ secrets.NEXTRINK_DEPLOY_TOKEN }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
