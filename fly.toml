@@ -12,6 +12,10 @@ auto_rollback = true
 source = "data"
 destination = "/data"
 
+[build]
+  dockerfile = "./other/Dockerfile"
+  ignorefile = "./other/.dockerignore"
+
 [deploy]
 release_command = "node ./other/sentry-create-release"
 
