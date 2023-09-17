@@ -10,6 +10,8 @@ import {
 } from '@remix-run/react'
 import Calendar from '~/components/calendar.tsx'
 import RecordTable from '~/components/record-table.tsx'
+import { Button } from '~/components/ui/button.tsx'
+import { Icon } from '~/components/ui/icon.tsx'
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'Coach | Dashboard' }]
@@ -113,10 +115,19 @@ export default function CoachIdRoute() {
 					Welcome Coach {user.coachProfile?.firstName}!
 				</h1>
 				<main className="m-2">
-					<p className="mb-4 text-lg">
-						Here is an overview of how your teams are doing
-					</p>
+					{teams.length ? (
+						<p className="mb-4 text-lg">
+							Here is an overview of how your teams are doing
+						</p>
+					) : null}
 					<div className="flex gap-8">
+						<Link to="teams/new">
+							<Button variant="secondary">
+								<Icon name="plus">
+									<span>Add a team</span>
+								</Icon>
+							</Button>
+						</Link>
 						<ul className="flex-1">
 							{teams.map(team => {
 								const injured = team.roster.filter(
@@ -205,6 +216,7 @@ export default function CoachIdRoute() {
 								)
 							})}
 						</ul>
+
 						<div>
 							<Calendar />
 						</div>

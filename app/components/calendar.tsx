@@ -1,7 +1,10 @@
-import { useState } from 'react'
-import { Calendar as CalendarCN } from './ui/calendar.tsx'
+import React from 'react'
+import { Calendar } from './ui/calendar.tsx'
 
-export default function Calendar() {
-	const [date, setDate] = useState<Date | undefined>(new Date())
-	return <CalendarCN mode="single" selected={date} onSelect={setDate} />
+export default function CalendarCmp() {
+	return (
+		<div className="rounded-md border border-slate-700 p-1">
+			<Calendar />
+		</div>
+	)
 }

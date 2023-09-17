@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react'
+import { Link, useParams } from '@remix-run/react'
 import { UserDropdown } from './user-dropdown.tsx'
 import { Button } from './ui/button.tsx'
 import { UserTeamsSelectBox } from '~/routes/resources+/user.teams.tsx'
@@ -11,6 +11,7 @@ export interface HeaderProps {
 }
 
 export function Header({ user, logoUrl, theme }: HeaderProps) {
+	const params = useParams()
 	return (
 		<nav className="flex items-center justify-between p-4">
 			<Link to="/">
@@ -19,7 +20,7 @@ export function Header({ user, logoUrl, theme }: HeaderProps) {
 			<div className="flex items-center gap-10">
 				{user ? (
 					<div className="flex gap-4">
-						<UserTeamsSelectBox />
+						<UserTeamsSelectBox onCurrentTeamId={params.teamId} />
 						<UserDropdown theme={theme} />
 					</div>
 				) : (

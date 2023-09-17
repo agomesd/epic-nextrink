@@ -39,48 +39,47 @@ export function DataTable<TData, TValue>({
 	})
 
 	return (
-		<div>
-			<Table className="bg-background text-xs">
-				<TableHeader className="p-2">
-					{table.getHeaderGroups().map(headerGroup => (
-						<TableRow key={headerGroup.id} className="p-2">
-							{headerGroup.headers.map(header => {
-								return (
-									<TableHead key={header.id}>
-										{header.isPlaceholder
-											? null
-											: flexRender(
-													header.column.columnDef.header,
-													header.getContext(),
-											  )}
-									</TableHead>
-								)
-							})}
+		<Table className="h-full w-full  bg-background text-xs">
+			<TableHeader className="p-2">
+				{table.getHeaderGroups().map(headerGroup => (
+					<TableRow key={headerGroup.id} className="p-2">
+						{headerGroup.headers.map(header => {
+							return (
+								<TableHead key={header.id} className="text-left">
+									{header.isPlaceholder
+										? null
+										: flexRender(
+												header.column.columnDef.header,
+												header.getContext(),
+										  )}
+								</TableHead>
+							)
+						})}
+					</TableRow>
+				))}
+			</TableHeader>
+
+			<TableBody>
+				{table.getRowModel().rows?.length ? (
+					table.getRowModel().rows.map(row => (
+						<TableRow
+							key={row.id}
+							data-state={row.getIsSelected() && 'selected'}
+							className="p-2"
+						>
+							{row.getVisibleCells().map(cell => (
+								<TableCell key={cell.id} className="px-1">
+									{flexRender(cell.column.columnDef.cell, cell.getContext())}
+								</TableCell>
+							))}
 						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody>
-					{table.getRowModel().rows?.length ? (
-						table.getRowModel().rows.map(row => (
-							<TableRow
-								key={row.id}
-								data-state={row.getIsSelected() && 'selected'}
-								className="p-2"
-							>
-								{row.getVisibleCells().map(cell => (
-									<TableCell key={cell.id} className="px-1">
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
-								))}
-							</TableRow>
-						))
-					) : (
-						<TableRow>
-							<TableCell colSpan={columns.length}>No results.</TableCell>
-						</TableRow>
-					)}
-				</TableBody>
-			</Table>
-		</div>
+					))
+				) : (
+					<TableRow>
+						<TableCell colSpan={columns.length}>No results.</TableCell>
+					</TableRow>
+				)}
+			</TableBody>
+		</Table>
 	)
 }

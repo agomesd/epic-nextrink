@@ -4,8 +4,7 @@ import { createPlayer, createRecord } from 'tests/db-utils.ts'
 import { prisma } from '~/utils/db.server.ts'
 import { deleteAllData } from 'tests/setup/utils.ts'
 import { getPasswordHash } from '~/utils/auth.server.ts'
-
-const SEASON = '2023/2024'
+import { addMonths } from 'date-fns'
 
 async function seed() {
 	console.log('🌱 Seeding...')
@@ -15,12 +14,116 @@ async function seed() {
 	deleteAllData()
 	console.timeEnd('🧹 Cleaned up the database...')
 
+	const entities = [
+		'role',
+		'permission',
+		'team',
+		'game',
+		'practice',
+		'coachProfile',
+		'playerProfile',
+		'associationProfile',
+		'arena',
+		'user',
+	]
+	const actions = ['create', 'read', 'update', 'delete']
+	const accesses = ['own', 'any', 'restricted']
+	console.time(`🤖 Create permissions...`)
+	for (const entity of entities) {
+		for (const action of actions) {
+			for (const access of accesses) {
+				await prisma.permission.create({ data: { access, action, entity } })
+			}
+		}
+	}
+	console.timeEnd(`🤖 Create permissions...`)
+
+	console.time(`👑 Created coach role/permission...`)
+	const coachRole = await prisma.role.create({
+		select: { id: true },
+		data: {
+			name: 'coach',
+			permissions: {
+				connect: await prisma.permission.findMany({
+					select: { id: true },
+					where: {
+						AND: [
+							{ access: 'restricted', action: 'create', entity: 'team' },
+							{ access: 'restricted', action: 'delete', entity: 'team' },
+							{ access: 'own', action: 'update', entity: 'team' },
+							{ access: 'own', action: 'read', entity: 'team' },
+							{ access: 'restricted', action: 'create', entity: 'game' },
+							{ access: 'restricted', action: 'delete', entity: 'game' },
+							{ access: 'restricted', action: 'update', entity: 'game' },
+							{ access: 'any', action: 'read', entity: 'game' },
+							{ access: 'restricted', action: 'create', entity: 'practice' },
+							{ access: 'restricted', action: 'delete', entity: 'practice' },
+							{ access: 'restricted', action: 'update', entity: 'practice' },
+							{ access: 'own', action: 'read', entity: 'practice' },
+							{ access: 'own', action: 'update', entity: 'coachProfile' },
+							{ access: 'any', action: 'read', entity: 'coachProfile' },
+							{ access: 'own', action: 'create', entity: 'playerProfile' },
+							{ access: 'own', action: 'delete', entity: 'playerProfile' },
+							{ access: 'own', action: 'update', entity: 'playerProfile' },
+							{ access: 'any', action: 'read', entity: 'playerProfile' },
+							{ access: 'any', action: 'read', entity: 'association' },
+							{ access: 'restricted', action: 'update', entity: 'arena' },
+							{ access: 'any', action: 'read', entity: 'arena' },
+							{ access: 'own', action: 'delete', entity: 'user' },
+							{ access: 'own', action: 'update', entity: 'user' },
+							{ access: 'own', action: 'read', entity: 'user' },
+						],
+					},
+				}),
+			},
+		},
+	})
+	console.timeEnd(`👑 Created coach role/permission...`)
+
+	console.time(`👑 Created player role/permission...`)
+	const playerRole = await prisma.role.create({
+		select: { id: true },
+		data: {
+			name: 'player',
+			permissions: {
+				connect: await prisma.permission.findMany({
+					select: { id: true },
+					where: {
+						AND: [
+							{ access: 'any', action: 'read', entity: 'team' },
+							{ access: 'any', action: 'read', entity: 'game' },
+							{ access: 'own', action: 'read', entity: 'practice' },
+							{ access: 'any', action: 'read', entity: 'coachProfile' },
+							{ access: 'own', action: 'create', entity: 'playerProfile' },
+							{ access: 'own', action: 'delete', entity: 'playerProfile' },
+							{ access: 'own', action: 'update', entity: 'playerProfile' },
+							{ access: 'any', action: 'read', entity: 'playerProfile' },
+							{ access: 'any', action: 'read', entity: 'association' },
+							{ access: 'any', action: 'read', entity: 'arena' },
+							{ access: 'own', action: 'delete', entity: 'user' },
+							{ access: 'own', action: 'update', entity: 'user' },
+						],
+					},
+				}),
+			},
+		},
+	})
+	console.timeEnd(`👑 Created player role/permission...`)
+
 	console.time(`👑 Created admin role/permission...`)
 	const adminRole = await prisma.role.create({
+		select: {
+			id: true,
+		},
 		data: {
 			name: 'admin',
 			permissions: {
-				create: { name: 'admin' },
+				connect: await prisma.permission.findMany({
+					select: { id: true },
+					where: {
+						access: 'any',
+					},
+				}),
 			},
 		},
 	})
@@ -182,7 +285,12 @@ async function seed() {
 		select: { id: true },
 		data: {
 			name: 'Royals',
-			season: SEASON,
+			season: {
+				create: {
+					from: addMonths(new Date(Date.now()), 2),
+					to: addMonths(new Date(Date.now()), 6),
+				},
+			},
 			association: { connect: { id: pierrefonds.id } },
 			caliber: { connect: { id: caliberA.id } },
 			level: { connect: { id: bantam.id } },
@@ -200,7 +308,12 @@ async function seed() {
 		select: { id: true },
 		data: {
 			name: 'Vipers',
-			season: SEASON,
+			season: {
+				create: {
+					from: addMonths(new Date(Date.now()), 2),
+					to: addMonths(new Date(Date.now()), 6),
+				},
+			},
 			association: { connect: { id: dollard.id } },
 			caliber: { connect: { id: caliberA.id } },
 			level: { connect: { id: bantam.id } },
@@ -223,8 +336,11 @@ async function seed() {
 				select: { id: true },
 				data: {
 					...playerData,
-					activeTeam: { connect: { id: royals.id } },
 					status: { connect: { id: present.id } },
+					position: { connect: { name: 'LW' } },
+					shotSide: { connect: { name: 'Left' } },
+					team: { connect: { id: royals.id } },
+					roles: { connect: { id: playerRole.id } },
 				},
 			})
 		}),
@@ -240,22 +356,22 @@ async function seed() {
 				select: { id: true },
 				data: {
 					...playerData,
-					activeTeam: { connect: { id: vipers.id } },
 					status: { connect: { id: present.id } },
+					position: { connect: { name: 'LW' } },
+					shotSide: { connect: { name: 'Left' } },
+					team: { connect: { id: vipers.id } },
+					roles: { connect: { id: playerRole.id } },
 				},
 			})
 		}),
 	)
 	console.timeEnd(`🏒 Created ${pierrefondsPlayers} players`)
 
-	console.time(
-		`🧔‍♂️ Created user "coach@ddo.com" with the password "dollard" and admin role`,
-	)
+	console.time(`🧔‍♂️ Created user "coach@ddo.com" with the password "dollard"...`)
 	await prisma.user.create({
 		select: { id: true },
 		data: {
 			email: 'coach@ddo.com',
-			roles: { connect: { id: adminRole.id } },
 			image: {
 				create: {
 					contentType: 'image/png',
@@ -277,25 +393,88 @@ async function seed() {
 				create: {
 					firstName: 'Alex',
 					lastName: 'Essaris',
-					coachedTeams: {
-						connect: { id: vipers.id },
-					},
+					roles: { connect: { id: coachRole.id } },
 				},
 			},
 		},
 	})
 	console.timeEnd(
-		`🧔‍♂️ Created user "coach@ddo.com" with the password "dollard" and admin role`,
+		`🧔‍♂️ Created user "coach@ddo.com" with the password "dollard"...`,
 	)
 
+	console.time(`🧔‍♂️ Created admin essaris...`)
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			adminProfile: {
+				create: {
+					firstName: 'Alex',
+					lastName: 'Essaris',
+					roles: { connect: [{ id: adminRole.id }, { id: coachRole.id }] },
+				},
+			},
+			email: 'alex.essaris@nextrink.com',
+			image: {
+				create: {
+					contentType: 'image/png',
+					file: {
+						create: {
+							blob: await fs.promises.readFile(
+								'./tests/fixtures/images/user/kody.png',
+							),
+						},
+					},
+				},
+			},
+			password: {
+				create: {
+					hash: await getPasswordHash('nextrink1234'),
+				},
+			},
+		},
+	})
+	console.timeEnd(`🧔‍♂️ Created admin essaris...`)
+
+	console.time(`🧔‍♂️ Created admin gomes...`)
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			adminProfile: {
+				create: {
+					firstName: 'Alex',
+					lastName: 'Gomes',
+					roles: { connect: [{ id: adminRole.id }, { id: coachRole.id }] },
+				},
+			},
+			email: 'alex.gomes@nextrink.com',
+			image: {
+				create: {
+					contentType: 'image/png',
+					file: {
+						create: {
+							blob: await fs.promises.readFile(
+								'./tests/fixtures/images/user/kody.png',
+							),
+						},
+					},
+				},
+			},
+			password: {
+				create: {
+					hash: await getPasswordHash('nextrink1234'),
+				},
+			},
+		},
+	})
+	console.timeEnd(`🧔‍♂️ Created admin gomes...`)
+
 	console.time(
-		`🧔‍♂️ Created user "coach@pfds.com" with the password "pierrefonds" and admin role`,
+		`🧔‍♂️ Created user "coach@pfds.com" with the password "pierrefonds"...`,
 	)
 	await prisma.user.create({
 		select: { id: true },
 		data: {
 			email: 'coach@pfds.com',
-			roles: { connect: { id: adminRole.id } },
 			image: {
 				create: {
 					contentType: 'image/png',
@@ -317,15 +496,13 @@ async function seed() {
 				create: {
 					firstName: 'Alex',
 					lastName: 'Gomes',
-					coachedTeams: {
-						connect: { id: royals.id },
-					},
+					roles: { connect: { id: coachRole.id } },
 				},
 			},
 		},
 	})
 	console.timeEnd(
-		`🧔‍♂️ Created user "coach@pfds.com" with the password "pierrefonds" and admin role`,
+		`🧔‍♂️ Created user "coach@pfds.com" with the password "pierrefonds"...`,
 	)
 
 	console.timeEnd(`🌱 Database has been seeded`)

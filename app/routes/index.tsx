@@ -18,6 +18,7 @@ export async function loader({ request }: DataFunctionArgs) {
 						select: {
 							coachProfile: true,
 							playerProfile: true,
+							adminProfile: true,
 						},
 					}),
 				{ timings, type: 'find user', desc: 'find user in root' },
@@ -31,9 +32,17 @@ export async function loader({ request }: DataFunctionArgs) {
 	}
 
 	if (user?.coachProfile) return redirect(`/coach/${user.coachProfile.id}`)
+	if (user?.adminProfile) return redirect(`/admin`)
 	return json({})
 }
 
 export default function HomeRoute() {
-	return <div>HomeRoute</div>
+	return (
+		<main className="container">
+			<h1 className="mt-24 flex flex-col">
+				<span className="text-3xl font-semibold">Welcome to</span>
+				<span className="text-6xl font-bold text-primary">NextRink</span>
+			</h1>
+		</main>
+	)
 }

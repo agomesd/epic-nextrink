@@ -9,8 +9,10 @@ export function SearchBar({
 	status,
 	autoFocus = false,
 	autoSubmit = false,
+	formAction,
 }: {
 	status: 'idle' | 'pending' | 'success' | 'error'
+	formAction: string
 	autoFocus?: boolean
 	autoSubmit?: boolean
 }) {
@@ -18,7 +20,7 @@ export function SearchBar({
 	const submit = useSubmit()
 	const isSubmitting = useIsSubmitting({
 		formMethod: 'GET',
-		formAction: '/user',
+		formAction,
 	})
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
@@ -28,7 +30,7 @@ export function SearchBar({
 	return (
 		<Form
 			method="GET"
-			action="/user"
+			action={formAction}
 			className="flex flex-wrap items-center justify-center gap-2"
 			onChange={e => autoSubmit && handleFormChange(e.currentTarget)}
 		>

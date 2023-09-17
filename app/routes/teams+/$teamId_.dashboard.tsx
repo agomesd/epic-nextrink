@@ -5,6 +5,14 @@ import { DataTable } from '~/components/data-table.tsx'
 import DepthChart from '~/components/depth-chart.tsx'
 import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
 import { playerColumns } from '~/components/player-columns.tsx'
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '~/components/ui/dialog.tsx'
+import { CreatePlayerForm } from '~/routes/resources+/player.$playerId.tsx'
 import { getCoachProfileId } from '~/utils/auth.server.ts'
 import { prisma } from '~/utils/db.server.ts'
 import { invariant } from '~/utils/misc.ts'
@@ -165,9 +173,24 @@ export default function Dashboard() {
 				{team?.level.name} {team?.caliber.name} {team?.name}
 			</h1>
 			<div className="grid gap-2 lg:grid-cols-2">
-				<div className="rounded-lg border border-border bg-background p-4">
-					<h2 className="mb-4 text-h2">Roster</h2>
-					<DataTable columns={playerColumns} data={tableData} />
+				<div className="relative rounded-lg border border-border bg-background p-4">
+					<Dialog defaultOpen>
+						<div className="flex items-center justify-between">
+							<h2 className="mb-4 text-h2">Roster</h2>
+							<DialogTrigger className="rounded-md bg-teal-400 px-2 py-1 font-semibold text-slate-900">
+								+ Add Player
+							</DialogTrigger>
+						</div>
+						<DataTable columns={playerColumns} data={tableData} />
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>Add a player to your roster</DialogTitle>
+								<div>
+									<CreatePlayerForm />
+								</div>
+							</DialogHeader>
+						</DialogContent>
+					</Dialog>
 				</div>
 				<div className="rounded-lg border border-border bg-background p-4">
 					<h2 className="mb-4 text-h2">Depth Chart</h2>

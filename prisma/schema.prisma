@@ -24,6 +24,21 @@ model Address {
   arenaId String @unique
 }
 
+model AdminProfile {
+   id   String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId],references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
+
+  roles Role[]
+
+  firstName String
+  lastName String
+}
+
 model Arena {
   id   String @id @default(cuid())
   name String @unique
@@ -76,9 +91,9 @@ model CoachProfile {
   lastName String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
-
   coachedTeams Team[] @relation("coached")
   supportedTeams Team[] @relation("supported")
+  roles    Role[]
 }
 
 model DepthChart {
@@ -108,7 +123,7 @@ model DepthLevel {
 }
 
 
-model FeedbackFrom {
+model FeedbackForm {
   id String @id @default(cuid())
 
   createdAt DateTime @default(now())
@@ -145,7 +160,7 @@ model Game {
   awayTeam Team @relation("awayTeam", fields: [awayTeamId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   awayTeamId String
 
-  feedbackForms FeedbackFrom[]
+  feedbackForms FeedbackForm[]
   outcome Outcome?
 }
 
@@ -212,12 +227,18 @@ model Password {
 
 model Permission {
   id   String @id @unique @default(cuid())
-  name String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  action String
+  access String
+  entity String
+
+  description String @default("")
+
   roles Role[]
+  @@unique([access, action, entity])
 }
 
 model Practice {
@@ -260,20 +281,21 @@ model PlayerProfile {
   lastName String
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String? @unique
-  position Position? @relation(fields: [positionId], references: [id], onUpdate: Cascade)
-  positionId String?
-  shotSide ShotSide? @relation(fields: [shotSideId], references: [id], onUpdate: Cascade)
-  shotSideId String?
+  position Position @relation(fields: [positionId], references: [id], onUpdate: Cascade)
+  positionId String
+  shotSide ShotSide @relation(fields: [shotSideId], references: [id], onUpdate: Cascade)
+  shotSideId String
   hometown String?
   dob DateTime?
   weight Float?
   height Float?
-  activeTeam Team @relation(fields: [activeTeamId], references: [id], onUpdate: Cascade)
-  activeTeamId String
   jerseyNumber Int?
   status Status @relation(fields: [statusId], references: [id], onUpdate: Cascade)
   statusId String
   depthChart DepthChart[]
+  team Team @relation(fields: [teamId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teamId String
+  roles    Role[]
 }
 
 model Record {
@@ -303,8 +325,21 @@ model Role {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users       User[]
+  players PlayerProfile[]
+  coaches CoachProfile[]
+  admins AdminProfile[]
   permissions Permission[]
+}
+
+model Season {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  from DateTime
+  to DateTime
+
+  teams Team[]
 }
 
 model Session {
@@ -337,6 +372,10 @@ model Status {
 
 model Team {
   id        String   @id @unique @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   name     String
   association Association @relation(fields: [associationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   associationId String
@@ -344,10 +383,9 @@ model Team {
   levelId String
   caliber Caliber @relation(fields: [caliberId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   caliberId String
-  createdAt DateTime @default(now())
-  feedbackForms FeedbackFrom[]
-  season   String
-  updatedAt DateTime @updatedAt
+  feedbackForms FeedbackForm[]
+  season   Season @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  seasonId String @unique
   roster PlayerProfile[]
   coach CoachProfile? @relation("coached", fields: [coachId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   coachId String? @unique
@@ -360,6 +398,8 @@ model Team {
   wins Outcome[] @relation("outcomeWin")
   losses Outcome[] @relation("outcomeLoss")
   depthChart DepthChart[]
+
+  @@unique([name, associationId, levelId, caliberId, seasonId])
 }
 
 model User {
@@ -375,7 +415,7 @@ model User {
   password Password?
   coachProfile CoachProfile?
   playerProfile PlayerProfile?
-  roles    Role[]
+  adminProfile AdminProfile?
   session  Session[]
 }
 
