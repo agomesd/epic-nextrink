@@ -22,7 +22,7 @@ const createPlayerFormSchema = z.object({
 	weight: z.string().optional(),
 	height: z.number().optional(),
 	jerseyNumber: z.number(),
-	activeTeamId: z.string(),
+	teamId: z.string(),
 })
 
 const updatePlayerFormSchema = createPlayerFormSchema.extend({
@@ -49,7 +49,7 @@ export async function action({ request }: DataFunctionArgs) {
 			}
 
 			const {
-				activeTeamId,
+				teamId,
 				firstName,
 				id,
 				jerseyNumber,
@@ -65,12 +65,12 @@ export async function action({ request }: DataFunctionArgs) {
 				select: { id: true },
 				where: { id },
 				data: {
-					activeTeam: { connect: { id: activeTeamId } },
 					firstName,
 					jerseyNumber,
 					lastName,
 					position: { connect: { id: positionId } },
 					shotSide: { connect: { id: shotSideId } },
+					team: { connect: { id: teamId } },
 					dob,
 					height,
 					hometown,
@@ -104,13 +104,13 @@ export async function action({ request }: DataFunctionArgs) {
 				height,
 				hometown,
 				weight,
-				activeTeamId,
+				teamId,
 			} = submission.value
 			await prisma.playerProfile.create({
 				data: {
 					firstName,
 					lastName,
-					activeTeam: { connect: { id: activeTeamId } },
+					team: { connect: { id: teamId } },
 					position: { connect: { id: positionId } },
 					shotSide: { connect: { id: shotSideId } },
 					status: { connect: { name: 'Present' } },
