@@ -69,7 +69,7 @@ test.skip('Users can update their profile photo', async ({ login, page }) => {
 
 	await expect(
 		page,
-		'Was not redirected after saving the profile photo',
+		'Was not redirected after saving the profile photo2',
 	).toHaveURL(`/settings/profile`)
 
 	const afterSrc = await page
