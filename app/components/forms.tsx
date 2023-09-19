@@ -21,6 +21,13 @@ import { format } from 'date-fns'
 import { Calendar } from './ui/calendar.tsx'
 import { Slider } from '~/components/ui/slider.tsx'
 import { cn } from '~/utils/misc.ts'
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+} from './ui/command.tsx'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
 
@@ -172,6 +179,7 @@ export interface SelectBoxProps {
 	placeholder?: string
 	routePath: string
 	accessorKey: string
+	itemToString?: (item: any) => string
 }
 
 export function SelectBox({
@@ -182,6 +190,9 @@ export function SelectBox({
 	placeholder = 'Select an item...',
 	routePath,
 	accessorKey,
+	itemToString = item => {
+		return item['name']
+	},
 }: SelectBoxProps) {
 	const [items, setItems] = useState<{ id: string; name: string }[]>([])
 	const { load, data } = useFetcher()
@@ -196,6 +207,7 @@ export function SelectBox({
 
 	useEffect(() => {
 		if (!data) return
+
 		setItems(data[accessorKey])
 	}, [data, accessorKey])
 	return (
@@ -208,7 +220,7 @@ export function SelectBox({
 				<SelectContent id={id}>
 					{items.map(item => (
 						<SelectItem key={item.id} value={item.id}>
-							{item.name}
+							{itemToString(item)}
 						</SelectItem>
 					))}
 				</SelectContent>
@@ -307,6 +319,75 @@ export function SliderField({
 				<span className="text-sm">min: {inputProps.min}</span>
 				<span className="text-sm">max: {inputProps.max}</span>
 			</div>
+		</div>
+	)
+}
+
+export interface ComboboxProps {
+	labelProps: React.LabelHTMLAttributes<HTMLLabelElement>
+	selectProps: React.SelectHTMLAttributes<HTMLSelectElement>
+	routePath: string
+	accessor: string
+	itemToString?: (item: any) => string
+}
+
+export function Combobox({
+	routePath,
+	accessor,
+	labelProps,
+	selectProps,
+	itemToString = item => {
+		return item['name']
+	},
+}: ComboboxProps) {
+	const [items, setItems] = useState<{ id: string; name: string }[]>([])
+	const [open, setOpen] = useState(false)
+	const [value, setValue] = useState('')
+	const { data, load } = useFetcher()
+
+	const fallbackId = useId()
+	const id = fallbackId
+
+	useEffect(() => {
+		load(routePath)
+	}, [load, routePath])
+
+	useEffect(() => {
+		if (!data || !data[accessor]) return
+		setItems(data[accessor])
+	}, [data, accessor])
+
+	return (
+		<div className="flex flex-col space-y-1">
+			<Label htmlFor={id} {...labelProps} />
+			<Popover open={open} onOpenChange={setOpen}>
+				<PopoverTrigger asChild>
+					<Button variant="outline" role="combobox" aria-expanded={open}>
+						{value}
+					</Button>
+				</PopoverTrigger>
+				<PopoverContent id={id}>
+					<Command>
+						<CommandInput placeholder={`Search ${accessor}`} />
+						<CommandEmpty>{`No ${accessor} found.`}</CommandEmpty>
+						<CommandGroup>
+							{items.map(item => (
+								<CommandItem
+									key={item.id}
+									onSelect={() => {
+										setValue(
+											itemToString(item) === value ? '' : itemToString(item),
+										)
+										setOpen(false)
+									}}
+								>
+									{itemToString(item)}
+								</CommandItem>
+							))}
+						</CommandGroup>
+					</Command>
+				</PopoverContent>
+			</Popover>
 		</div>
 	)
 }

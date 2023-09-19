@@ -2,9 +2,10 @@ import { NavLink, Outlet } from '@remix-run/react'
 import { Button } from '~/components/ui/button.tsx'
 
 const adminLinks = [
-	{ id: 'teams', label: 'Teams', slug: 'teams' },
+	{ id: 'calibers', label: 'Calibers', slug: 'calibers' },
 	{ id: 'coaches', label: 'Coaches', slug: 'coaches' },
 	{ id: 'players', label: 'Players', slug: 'players' },
+	{ id: 'teams', label: 'Teams', slug: 'teams' },
 ]
 
 export default function AdminLayout() {

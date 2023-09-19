@@ -8,7 +8,7 @@ import {
 } from '@remix-run/node'
 import { Form, useFetcher } from '@remix-run/react'
 import { z } from 'zod'
-import { Field } from '~/components/forms.tsx'
+import { Combobox, Field, SelectBox } from '~/components/forms.tsx'
 import { prisma } from '~/utils/db.server.ts'
 
 const nameMinLength = 3
@@ -123,8 +123,54 @@ export function TeamEditor({
 						}}
 						errors={fields.name.errors}
 					/>
+					<Combobox
+						accessor="associations"
+						labelProps={{ children: 'Association' }}
+						routePath="/resources/association"
+						selectProps={{ ...conform.select(fields.caliberId) }}
+					/>
+					<Combobox
+						accessor="levels"
+						labelProps={{ children: 'Level' }}
+						routePath="/resources/level"
+						selectProps={{ ...conform.select(fields.caliberId) }}
+					/>
+					<Combobox
+						accessor="calibers"
+						labelProps={{ children: 'Caliber' }}
+						routePath="/resources/caliber"
+						selectProps={{ ...conform.select(fields.caliberId) }}
+					/>
+					<SelectBox
+						accessorKey="seasons"
+						labelProps={{ children: 'Season' }}
+						routePath="/resources/season"
+						selectProps={{ ...conform.select(fields.seasonId) }}
+						itemToString={item =>
+							formatSeasonSelectLabels(item['from'], item['to'])
+						}
+					/>
+					<Combobox
+						accessor="coaches"
+						labelProps={{ children: 'Coach' }}
+						routePath="/resources/coach"
+						selectProps={{ ...conform.select(fields.coachId) }}
+						itemToString={item => `${item['firstName']} ${item['lastName']}`}
+					/>
 				</div>
 			</Form>
 		</div>
 	)
+}
+
+function formatSeasonSelectLabels(from: string, to: string) {
+	const fromDate = new Date(from).toLocaleDateString('en-us', {
+		year: 'numeric',
+		month: 'short',
+	})
+	const toDate = new Date(to).toLocaleDateString('en-us', {
+		year: 'numeric',
+		month: 'short',
+	})
+	return `${fromDate} - ${toDate}`
 }
