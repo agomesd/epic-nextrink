@@ -1,6 +1,5 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
 import {
-	Form,
 	Link,
 	useActionData,
 	useLoaderData,
@@ -12,7 +11,7 @@ import { Icon } from '~/components/ui/icon.tsx'
 import { ScrollArea } from '~/components/ui/scroll-area.tsx'
 import { prisma } from '~/utils/db.server.ts'
 import { cn, sortAlph } from '~/utils/misc.ts'
-import { AddCaliberForm } from '../resources+/caliber.tsx'
+import { AddCaliberForm, DeleteCaliberForm } from '../resources+/caliber.tsx'
 import {
 	Command,
 	CommandEmpty,
@@ -84,7 +83,14 @@ export async function loader({ request }: DataFunctionArgs) {
 		select: {
 			id: true,
 			name: true,
-			teams: { select: { name: true, id: true } },
+			teams: {
+				select: {
+					name: true,
+					id: true,
+					caliber: { select: { name: true } },
+					level: { select: { name: true } },
+				},
+			},
 		},
 	})
 
@@ -127,31 +133,20 @@ export default function Calibers() {
 							.map(caliber => (
 								<li
 									className={cn(
-										'group flex justify-between rounded-md border border-input bg-background p-1 hover:bg-accent hover:text-accent-foreground',
+										'group flex items-center justify-between rounded-md border border-input bg-background pr-1 hover:bg-accent hover:text-accent-foreground',
 										caliberId === caliber.id && 'border-teal-400',
 									)}
 									key={caliber.id}
 								>
-									<Button variant="ghost" asChild>
+									<Button variant="ghost" asChild className="h-full">
 										<Link to={`?caliberId=${caliber.id}`} className="flex-1">
 											{caliber.name}
 										</Link>
 									</Button>
-									<Form
-										className="hidden duration-300 group-hover:block"
-										method="POST"
-										{...form.props}
-									>
-										<input
-											name="caliberId"
-											hidden
-											value={caliber.id}
-											readOnly
-										/>
-										<Button variant="destructive">
-											<Icon name="trash" />
-										</Button>
-									</Form>
+									<DeleteCaliberForm
+										caliberId={caliber.id}
+										redirectTo="/admin/calibers"
+									/>
 								</li>
 							))}
 					</ul>
@@ -167,7 +162,9 @@ export default function Calibers() {
 								{association.teams.map(team => (
 									<CommandItem key={team.id}>
 										<Link to={`/teams/${team.id}`} className="h-full w-full">
-											<span>{team.name}</span>
+											<span>
+												{team.level.name} {team.caliber.name} {team.name}
+											</span>
 										</Link>
 									</CommandItem>
 								))}
