@@ -16,7 +16,7 @@ export const passwordSchema = z
 	.max(100, { message: 'Password is too long' })
 export const nameSchema = z
 	.string()
-	.min(3, { message: 'Name is too short' })
+	.min(2, { message: 'Name is too short' })
 	.max(40, { message: 'Name is too long' })
 export const emailSchema = z
 	.string()

@@ -21,7 +21,7 @@ export default function AdminLayout() {
 					</NavLink>
 				))}
 			</nav>
-			<section className="container">
+			<section className="container my-12 flex h-full w-full gap-4">
 				<Outlet />
 			</section>
 		</main>
